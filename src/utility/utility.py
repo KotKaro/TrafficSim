@@ -15,17 +15,17 @@ class Point:
         self.x = x
         self.y = y
 
-    def len(self):
+    def len(self) -> float:
         return math.sqrt(self.x * self.x + self.y * self.y)
 
-    def normal(self):
+    def normal(self) -> 'Point':
         return Point(-self.y, self.x)
 
-    def unit(self):
-        l = self.len()
-        return Point(self.x / l, self.y / l)
+    def unit(self) -> 'Point':
+        length = self.len()
+        return Point(self.x / length, self.y / length)
 
-    def ang(self):
+    def ang(self) -> float:
         return math.atan2(self.y, self.x)
 
     def __mul__(self, k):
@@ -41,16 +41,16 @@ class Point:
         return Point(-self.x, -self.y)
 
 
-def cross_multiply(A, B):
-    return A.x * B.y - A.y * B.x
+def cross_multiply(a: Point, b: Point) -> float:
+    return a.x * b.y - a.y * b.x
 
 
-def dot_multiply(A, B):
-    return A.x * B.x + A.y * B.y
+def dot_multiply(point_a: Point, point_b: Point) -> float:
+    return point_a.x * point_b.x + point_a.y * point_b.y
 
 
-def calc_ang(A, B):
-    ang = A.ang() - B.ang()
+def calc_ang(point_a: Point, point_b: Point) -> float:
+    ang = point_a.ang() - point_b.ang()
     pi = math.acos(-1)
     while ang >= pi / 2:
         ang -= pi / 2
@@ -59,9 +59,9 @@ def calc_ang(A, B):
     return min(ang, pi - ang)
 
 
-def on_segment(A, B, P):
-    v1 = cross_multiply(B - A, P - A)
-    v2 = dot_multiply(P - A, P - B)
+def on_segment(a: Point, b: Point, p: Point) -> bool:
+    v1 = cross_multiply(b - a, p - a)
+    v2 = dot_multiply(p - a, p - b)
     return Point.sign(v1) == 0 and v2 <= 0
 
 
