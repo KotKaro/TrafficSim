@@ -3,8 +3,9 @@ import os
 import unittest
 import tempfile
 
-from src.utility.utility import Point, cross_multiply, dot_multiply, calc_ang, on_segment, calc_intersect_point, \
-    max2double, generate_random_indices, read_json_from_file, write_json_to_file, double2string, min2double
+from src.utility.utility import Point, JsonMemberMiss, JsonTypeError, cross_multiply, dot_multiply, calc_ang, on_segment, calc_intersect_point, \
+    max2double, generate_random_indices, read_json_from_file, write_json_to_file, double2string, min2double, \
+    get_json_member_value, get_json_member_value, get_json_member_array, get_json_member_object, json_convertable_to
 
 
 class TestPoint(unittest.TestCase):
@@ -48,7 +49,7 @@ class TestPoint(unittest.TestCase):
         result = sut.ang()
 
         # Assert
-        
+
         self.assertEqual(result, math.pi / 4)
 
     def test_mul_returns_point_with_multiplied_coordinates(self):
@@ -268,6 +269,97 @@ class TestUtilityDefs(unittest.TestCase):
         # Assert
         self.assertEqual(read_json_from_file(filename), {"test": "test"})
         os.remove(filename)
+
+    def test_get_json_member_value_returns_value_of_member(self):
+        # Arrange
+        object = {"test": "test1"}
+
+        # Act
+        result = get_json_member_value("test", object)
+
+        # Assert
+        self.assertEqual(result, "test1")
+
+    def test_get_json_member_value_raises_JsonMemberMiss_if_property_is_missing_in_object(self):
+        # Arrange§
+        object = {"test": "test1"}
+
+        # Act
+        with self.assertRaises(JsonMemberMiss):
+            # Assert
+            get_json_member_value("test1", object)
+
+    def test_get_json_member_object_returns_object_of_member(self):
+        # Arrange
+        object = {"test": {"test1": "test2"}}
+
+        # Act
+        result = get_json_member_object("test", object)
+
+        # Assert
+        self.assertEqual(result, {"test1": "test2"})
+
+    def test_get_json_member_object_raises_JsonTypeError_if_property_is_not_a_dict(self):
+        # Arrange
+        object = {"test": "not a dict"}
+
+        # Act
+        with self.assertRaises(JsonTypeError):
+            # Assert
+            get_json_member_object("test", object)
+
+    def test_get_json_member_array_returns_array_of_member(self):
+        # Arrange
+        object = {"test": ["test1", "test2"]}
+
+        # Act
+        result = get_json_member_array("test", object)
+
+        # Assert
+        self.assertEqual(result, ["test1", "test2"])
+
+    def test_get_json_member_array_raises_JsonTypeError_if_property_is_not_an_array(self):
+        # Arrange
+        object = {"test": "test"}
+
+        # Act
+        with self.assertRaises(JsonTypeError):
+            # Assert
+            get_json_member_array("test", object)
+
+    def test_json_convertable_to_returns_true_if_string_is_provided_and_trying_convert_to_str(self):
+        # Arrange
+        value = "test"
+        target_type = str
+
+        # Act
+        result = json_convertable_to(value, target_type)
+
+        # Assert
+        self.assertTrue(result)
+
+    def test_json_convertable_to_returns_false_if_number_is_provided_and_trying_convert_to_str(self):
+        # Arrange
+        value = 1
+        target_type = str
+
+        # Act
+        result = json_convertable_to(value, target_type)
+
+        # Assert
+        self.assertFalse(result)
+
+    def test_json_convertable_to_returns_true_when_trying_to_convert_number_to_float(self):
+        # Arrange
+        value = 1
+        target_type = float
+
+        # Act
+        result = json_convertable_to(value, target_type)
+
+        # Assert
+        self.assertTrue(result)
+
 
 
 if __name__ == "__main__":
