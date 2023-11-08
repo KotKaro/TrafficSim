@@ -1,6 +1,6 @@
 import unittest
 
-from src.roadnet.traffic_light import TrafficLight
+from src.roadnet.traffic_light import TrafficLight, Intersection, LightPhase
 
 
 class TestTrafficLight(unittest.TestCase):
@@ -55,9 +55,10 @@ class TestTrafficLight(unittest.TestCase):
 
     def test_pass_time_should_decrease_remain_duration_of_current_phase(self):
         # Arrange
-        self.sut.intersection = lambda: None
-        self.sut.intersection.is_virtual = False
-        self.sut.phases = [lambda: None, lambda: None, lambda: None]
+        intersection = Intersection()
+        intersection.is_virtual = False
+        self.sut.intersection = intersection
+        self.sut.phases = [LightPhase(), LightPhase(), LightPhase()]
         self.sut.phases[2].time = 10
 
         self.sut.init(2)

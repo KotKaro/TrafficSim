@@ -2,7 +2,8 @@ from typing import List
 
 
 class Intersection:
-    pass
+    def __init__(self):
+        self.is_virtual = False
 
 
 class RoadLink:
@@ -22,7 +23,7 @@ class LightPhase:
 
 class TrafficLight:
     def __init__(self):
-        self.intersection = None  # Type: Intersection
+        self.intersection: Intersection = None
         self.phases: List[LightPhase] = []
         self.road_link_indices: List[int] = []
         self.remain_duration = 0.0
@@ -33,19 +34,19 @@ class TrafficLight:
             self.cur_phase_index = init_phase_index
             self.remain_duration = self.phases[init_phase_index].time
 
-    def get_current_phase_index(self):
+    def get_current_phase_index(self) -> int:
         return self.cur_phase_index
 
-    def get_current_phase(self):
+    def get_current_phase(self) -> LightPhase:
         return self.phases[self.cur_phase_index]
 
-    def get_intersection(self):
+    def get_intersection(self) -> Intersection:
         return self.intersection
 
-    def get_phases(self):
+    def get_phases(self) -> List[LightPhase]:
         return self.phases
 
-    def pass_time(self, seconds):
+    def pass_time(self, seconds) -> None:
         if self.intersection and not self.intersection.is_virtual:
             self.remain_duration -= seconds
             while self.remain_duration <= 0.0:
