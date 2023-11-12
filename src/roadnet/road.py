@@ -39,7 +39,7 @@ class Road:
         return self.lane_pointers
 
     def build_segmentation_by_interval(self, interval) -> None:
-        number_of_segments = max(math.ceil(self.get_length_of_points(self.points) / interval), 1)
+        number_of_segments = max(math.ceil(Point.get_length_of_points(self.points) / interval), 1)
         for lane in self.lanes:
             lane.buildSegmentation(number_of_segments)
 
@@ -60,8 +60,8 @@ class Road:
         return self.get_length() / len(self.get_lanes())
 
     def get_average_speed(self):
-        vehicleNum = 0;
-        speedSum = 0;
+        vehicleNum = 0
+        speedSum = 0
         for lane in self.lanes:
             vehicleNum += lane.historyVehicleNum
             speedSum += lane.historyAverageSpeed * lane.historyVehicleNum
