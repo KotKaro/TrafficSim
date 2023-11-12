@@ -18,7 +18,7 @@ class Road:
     def get_id(self):
         return self.id
 
-    def get_start_intersection(self):
+    def get_start_intersection(self) -> Intersection:
         return self.start_intersection
 
     def get_end_intersection(self):
