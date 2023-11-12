@@ -23,11 +23,11 @@ class RoadNet:
         return Point((p2.x - p1.x) * a + p1.x, (p2.y - p1.y) * a + p1.y)
 
     def load_from_json(self, json_file_name):
-        # Implementation for loadFromJson
+        # TODO Implementation for loadFromJson
         pass
 
     def convert_to_json(self, allocator):
-        # Implementation for convertToJson
+        # TODO Implementation for convertToJson
         pass
 
     def get_roads(self):
