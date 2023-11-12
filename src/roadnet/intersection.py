@@ -10,17 +10,18 @@ from src.utility.utility import Point, cross_multiply, on_segment, calc_ang, cal
 
 
 class Intersection:
-    def __init__(self, id, is_virtual, width, point: Point, traffic_light: TrafficLight, roads: List[Road],
+    def __init__(self, id: str, is_virtual: bool, width: float, point: Point, traffic_light: TrafficLight,
+                 roads: List[Road],
                  road_links: List[RoadLink], crosses: List[Cross], lane_links: List[LaneLink]):
-        self.id = id
-        self.is_virtual = is_virtual
-        self.width = width
+        self.id: str = id
+        self.is_virtual: bool = is_virtual
+        self.width: float = width
         self.point: Point = point
-        self.traffic_light = traffic_light
-        self.roads = roads
-        self.road_links = road_links
-        self.crosses = crosses
-        self.lane_links = lane_links
+        self.traffic_light: TrafficLight = traffic_light
+        self.roads: List[Road] = roads
+        self.road_links: List[RoadLink] = road_links
+        self.crosses: List[Cross] = crosses
+        self.lane_links: List[LaneLink] = lane_links
 
     def get_id(self):
         return self.id
@@ -113,11 +114,7 @@ class Intersection:
         return len(self.traffic_light.get_phases()) <= 1
 
     def init_crosses(self):
-        all_lane_links = []
-        for road_link in self.road_links:
-            for lane_link in road_link.lane_links:
-                all_lane_links.append(lane_link)
-
+        all_lane_links = [lane_link for road_link in self.road_links for lane_link in road_link.lane_links]
         n = len(all_lane_links)
 
         for i in range(n):
