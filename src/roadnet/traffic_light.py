@@ -1,17 +1,6 @@
 from typing import List
 
-
-class Intersection:
-    def __init__(self):
-        self.is_virtual = False
-
-
-class RoadLink:
-    pass
-
-
-class RoadNet:
-    pass
+from src.roadnet.intersection import Intersection
 
 
 class LightPhase:

@@ -2,6 +2,11 @@ import math
 import random
 import json
 import os
+from typing import List
+
+
+def get_length_of_points(points):
+    pass
 
 
 class Point:
@@ -10,6 +15,26 @@ class Point:
     @staticmethod
     def sign(x):
         return (x + Point.eps > 0) - (x < Point.eps)
+
+    @staticmethod
+    def get_length_of_points(points: List['Point']) -> float:
+        length = 0.0
+        for i in range(len(points) - 1):
+            length += (points[i + 1] - points[i]).len()
+        return length
+
+    @staticmethod
+    def get_point_by_distance(points: List['Point'], dis: float) -> 'Point':
+        dis = min2double(max2double(dis, 0), Point.get_length_of_points(points))
+        if dis <= 0.0:
+            return points[0];
+        for i in range(1, len(points)):
+            points_len = (points[i - 1] - points[i]).len()
+            if dis > points_len:
+                dis -= points_len
+            else:
+                return points[i - 1] + (points[i] - points[i - 1]) * (dis / points_len)
+        return points[-1]
 
     def __init__(self, x=0.0, y=0.0):
         self.x = x
@@ -77,7 +102,7 @@ def max2double(x, y):
     return max(x, y)
 
 
-def min2double(x, y):
+def min2double(x: float, y: float) -> float:
     return min(x, y)
 
 
