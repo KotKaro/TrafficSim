@@ -7,7 +7,8 @@ from src.utility.utility import Point
 
 
 class Road:
-    def __init__(self, id, start_intersection: Intersection=None, end_intersection: Intersection=None, lanes:List[Lane]=None, points: List[Point]=None):
+    def __init__(self, id, start_intersection: Intersection = None, end_intersection: Intersection = None,
+                 lanes: List[Lane] = None, points: List[Point] = None):
         self.id = id
         self.start_intersection = start_intersection
         self.end_intersection = end_intersection
@@ -44,12 +45,6 @@ class Road:
 
     def connected_to_road(self, road) -> bool:
         return any([len(lane.getLaneLinksToRoad(road)) for lane in self.get_lanes()])
-
-        for lane in self.get_lanes():
-            if len(lane.getLaneLinksToRoad(road)) > 0:
-                return True
-
-        return False
 
     def reset(self):
         for lane in self.lanes:
