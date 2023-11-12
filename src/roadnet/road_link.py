@@ -31,7 +31,7 @@ class RoadLink:
         return self.endRoad
 
     def is_available(self):
-        return self.intersection.trafficLight.getCurrentPhase().roadLinkAvailable[self.index]
+        return self.intersection.traffic_light.get_current_phase().road_link_available[self.index]
 
     def is_turn(self):
         return self.type == RoadLinkType.turn_left or self.type == RoadLinkType.turn_right

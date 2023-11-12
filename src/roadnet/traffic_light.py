@@ -7,7 +7,7 @@ class LightPhase:
     def __init__(self):
         self.phase = 0
         self.time = 0.0
-        self.road_link_available = []
+        self.road_link_available: List[bool] = []
 
 
 class TrafficLight:
@@ -47,3 +47,6 @@ class TrafficLight:
 
     def reset(self):
         self.init(0)
+
+    def get_current_phase(self) -> LightPhase:
+        return self.phases[self.cur_phase_index]

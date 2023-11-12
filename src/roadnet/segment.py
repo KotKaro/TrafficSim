@@ -9,7 +9,7 @@ class Segment:
         self.belong_lane = belong_lane
         self.start_pos = start_pos
         self.end_pos = end_pos
-        self.vehicles = []
+        self.vehicles: List[Vehicle] = []
 
     def get_start_pos(self):
         return self.start_pos
@@ -30,10 +30,7 @@ class Segment:
         return None
 
     def remove_vehicle(self, vehicle):
-        for v in self.vehicles:
-            if v == vehicle:
-                self.vehicles.remove(v)
-                return
+        self.vehicles.remove(vehicle)
 
     def insert_vehicle(self, vehicle):
         index = 0
