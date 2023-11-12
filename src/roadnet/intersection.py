@@ -45,7 +45,7 @@ class Intersection:
             return self.lane_links
 
         for road_link in self.road_links:
-            road_lane_links = road_link.get_lane_links()
+            road_lane_links = road_link.lane_links
             self.lane_links.extend(road_lane_links)
 
         return self.lane_links
@@ -115,7 +115,7 @@ class Intersection:
     def init_crosses(self):
         all_lane_links = []
         for road_link in self.road_links:
-            for lane_link in road_link.get_lane_links():
+            for lane_link in road_link.lane_links:
                 all_lane_links.append(lane_link)
 
         n = len(all_lane_links)

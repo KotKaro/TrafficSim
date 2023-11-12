@@ -1,5 +1,6 @@
 from typing import List
 
+from src.roadnet.cross import Cross
 from src.roadnet.drivable import Drivable, DrivableType
 from src.roadnet.lane import Lane
 from src.roadnet.road_link import RoadLink

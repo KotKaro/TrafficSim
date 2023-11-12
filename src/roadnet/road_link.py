@@ -1,4 +1,9 @@
 from enum import Enum, auto
+from typing import List
+
+from src.roadnet.intersection import Intersection
+from src.roadnet.lane_link import LaneLink
+from src.roadnet.road import Road
 
 
 class RoadLinkType(Enum):
@@ -9,25 +14,15 @@ class RoadLinkType(Enum):
 
 class RoadLink:
     def __init__(self):
-        self.intersection = None
-        self.startRoad = None
-        self.endRoad = None
-        self.type = None
-        self.laneLinks = []
-        self.laneLinkPointers = []
-        self.index = None
-
-    def get_lane_links(self):
-        return self.laneLinks
+        self.intersection: Intersection = None
+        self.startRoad: Road = None
+        self.endRoad: Road = None
+        self.type: RoadLinkType = None
+        self.lane_links: List[LaneLink] = []
+        self.index: int = None
 
     def get_lane_link_pointers(self):
-        if len(self.laneLinkPointers) > 0:
-            return self.laneLinkPointers
-
-        for laneLink in self.laneLinks:
-            self.laneLinkPointers.append(laneLink)
-
-        return self.laneLinkPointers
+        return self.lane_links
 
     def get_start_road(self):
         return self.startRoad
@@ -42,5 +37,5 @@ class RoadLink:
         return self.type == RoadLinkType.turn_left or self.type == RoadLinkType.turn_right
 
     def reset(self):
-        for laneLink in self.laneLinks:
+        for laneLink in self.lane_links:
             laneLink.reset()
