@@ -6,7 +6,7 @@ from src.roadnet.lane_link import LaneLink
 from src.roadnet.road import Road
 from src.roadnet.road_link import RoadLink
 from src.roadnet.traffic_light import TrafficLight
-from src.utility.utility import Point, cross_multiply, on_segment, calc_ang
+from src.utility.utility import Point, cross_multiply, on_segment, calc_ang, calc_intersect_point
 
 
 class Intersection:
@@ -15,7 +15,7 @@ class Intersection:
         self.id = id
         self.is_virtual = is_virtual
         self.width = width
-        self.point = point
+        self.point: Point = point
         self.traffic_light = traffic_light
         self.roads = roads
         self.road_links = road_links
@@ -58,9 +58,9 @@ class Intersection:
             cross.reset()
 
     def get_outline(self) -> List[Point]:
-        points = [self.get_position()]
+        points = [self.point]
         for road in self.get_roads():
-            road_direct = road.get_end_intersection().get_position() - road.get_start_intersection().get_position()
+            road_direct = road.get_end_intersection().get_position() - road.get_start_intersection().point
             road_direct = road_direct.unit()
             p_direct = road_direct.normal()
             if road.get_start_intersection() == self:
@@ -70,7 +70,7 @@ class Intersection:
             delta_width = 0.5 * min(self.width, road_width)
             delta_width = max(delta_width, 5)
 
-            point_a = self.get_position() - road_direct * self.width
+            point_a = self.point - road_direct * self.width
             point_b = point_a - p_direct * road_width
             points.append(point_a)
             points.append(point_b)
@@ -137,7 +137,7 @@ class Intersection:
                         if Point.sign(cross_multiply(a2 - a1, b2 - b1)) == 0:
                             continue
 
-                        p = self.calc_intersect_point(a1, a2, b1, b2)
+                        p = calc_intersect_point(a1, a2, b1, b2)
 
                         if on_segment(a1, a2, p) and on_segment(b1, b2, p):
                             cross = Cross()
