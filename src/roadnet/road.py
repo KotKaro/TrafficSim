@@ -41,10 +41,10 @@ class Road:
     def build_segmentation_by_interval(self, interval) -> None:
         number_of_segments = max(math.ceil(Point.get_length_of_points(self.points) / interval), 1)
         for lane in self.lanes:
-            lane.buildSegmentation(number_of_segments)
+            lane.build_segmentation(number_of_segments)
 
     def connected_to_road(self, road) -> bool:
-        return any([len(lane.getLaneLinksToRoad(road)) for lane in self.get_lanes()])
+        return any([len(lane.get_lane_links_to_road(road)) for lane in self.get_lanes()])
 
     def reset(self):
         for lane in self.lanes:

@@ -1,3 +1,8 @@
+from typing import List
+
+from src.vehicle.vehicle import Vehicle
+
+
 class Segment:
     def __init__(self, index, belong_lane, start_pos, end_pos):
         self.index = index
@@ -15,7 +20,7 @@ class Segment:
     def get_index(self):
         return self.index
 
-    def get_vehicles(self):
+    def get_vehicles(self) -> List[Vehicle]:
         return self.vehicles
 
     def find_vehicle(self, vehicle):

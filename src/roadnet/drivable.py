@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import List
 
 from src.utility.utility import Point
+from src.vehicle.vehicle import Vehicle
 
 
 class DrivableType(Enum):
@@ -14,7 +16,7 @@ class Drivable(ABC):
         self.length = length
         self.width = width
         self.max_speed = max_speed
-        self.vehicles = []
+        self.vehicles: List[Vehicle] = []
         self.points = []
         self.drivable_type = DrivableType(drivable_type)
 
