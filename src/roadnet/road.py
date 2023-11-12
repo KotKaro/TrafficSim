@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 from src.roadnet.lane import Lane
@@ -27,49 +28,56 @@ class Road:
     def get_lanes(self):
         return self.lanes
 
-    def get_lane_pointers(self):
-        # TODO finish it
-        # ... implementation based on C++ code ...
+    def get_lane_pointers(self) -> List[Lane]:
+        if len(self.lane_pointers) > 0:
+            return self.lane_pointers
 
-    def build_segmentation_by_interval(self, interval):
-        # TODO finish it
+        for lane in self.lanes:
+            self.lane_pointers.append(lane)
 
-        # ... implementation based on C++ code ...
+        return self.lane_pointers
 
-    def connected_to_road(self, road):
-        # TODO finish it
+    def build_segmentation_by_interval(self, interval) -> None:
+        number_of_segments = max(math.ceil(self.get_length_of_points(self.points) / interval), 1)
+        for lane in self.lanes:
+            lane.buildSegmentation(number_of_segments)
 
-        # ... implementation based on C++ code ...
+    def connected_to_road(self, road) -> bool:
+        return any([len(lane.getLaneLinksToRoad(road)) for lane in self.get_lanes()])
+
+        for lane in self.get_lanes():
+            if len(lane.getLaneLinksToRoad(road)) > 0:
+                return True
+
+        return False
 
     def reset(self):
-        # TODO finish it
+        for lane in self.lanes:
+            lane.reset()
 
-        # ... implementation based on C++ code ...
-
-    def get_width(self):
-        # TODO finish it
-
-        # ... implementation based on C++ code ...
+    def get_width(self) -> float:
+        return sum([lane.get_width() for lane in self.get_lanes()])
 
     def get_length(self):
-        # TODO finish it
-
-        # ... implementation based on C++ code ...
+        return sum([lane.get_length() for lane in self.get_lanes()])
 
     def average_length(self):
-        # TODO finish it
-
-        # ... implementation based on C++ code ...
+        return self.get_length() / len(self.get_lanes())
 
     def get_average_speed(self):
-        # TODO finish it
+        vehicleNum = 0;
+        speedSum = 0;
+        for lane in self.lanes:
+            vehicleNum += lane.historyVehicleNum
+            speedSum += lane.historyAverageSpeed * lane.historyVehicleNum
 
-        # ... implementation based on C++ code ...
+        return speedSum / vehicleNum if vehicleNum else -1
 
     def get_average_duration(self):
-        # TODO finish it
-
-        # ... implementation based on C++ code ...
+        averageSpeed = self.get_average_speed()
+        if averageSpeed < 0:
+            return -1
+        return self.average_length() / averageSpeed
 
     def get_plan_route_buffer(self):
         return self.plan_route_buffer
