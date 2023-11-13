@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List
 
 from src.roadnet.drivable import Drivable
@@ -23,12 +24,37 @@ class RoadNet:
         return Point((p2.x - p1.x) * a + p1.x, (p2.y - p1.y) * a + p1.y)
 
     def load_from_json(self, json_file_name):
-        # TODO Implementation for loadFromJson
-        pass
+        with open(json_file_name, 'r') as file:
+            document = json.load(file)
 
-    def convert_to_json(self, allocator):
-        # TODO Implementation for convertToJson
-        pass
+        # Check if the document is an object
+        if not isinstance(document, dict):
+            raise TypeError("roadnet config file should be an object")
+
+        inter_values = document["intersections"]
+        road_values = document["roads"]
+
+        self._roads = [Road() for road in road_values]
+
+    def convert_to_json(self):
+        return {
+            "nodes": list(map(lambda intersection: {
+                "id": intersection.id,
+                "point": [intersection.point.x, intersection.point.y],
+                "virtual": intersection.is_virtual,
+                "outline": [coordinate for point in intersection.get_outline() for coordinate in (point.x, point.y)],
+                **({
+                       "width": intersection.width} if not intersection.is_virtual and intersection.width is not None else {})
+            }, self._intersections)),
+            "edges": list(map(self._roads, lambda road: {
+                "id": road.id,
+                "from": road.start_intersection.id if road.start_intersection else "null",
+                "to": road.end_intersection.id if road.end_intersection else "null",
+                "points": [[point.x, point.y] for point in road.points],
+                "nLane": len(road.lanes),
+                "laneWidths": [lane.width for lane in road.lanes]
+            }))
+        }
 
     def get_roads(self):
         return self._roads
