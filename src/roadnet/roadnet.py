@@ -170,7 +170,7 @@ class RoadNet:
                         mid1 = Point(start.x + gap1X, start.y + gap1Y)
                         mid2 = Point(end.x + gap2X, end.y + gap2Y)
                         numPoints = 10.0
-                        for y in range(numPoints + 1):
+                        for y in range(int(numPoints + 1)):
                             p1 = self.get_point(start, mid1, y / numPoints)
                             p2 = self.get_point(mid1, mid2, y / numPoints)
                             p3 = self.get_point(mid2, end, y / numPoints)
