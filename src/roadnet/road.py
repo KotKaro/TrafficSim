@@ -7,13 +7,13 @@ from src.utility.utility import Point
 
 
 class Road:
-    def __init__(self, id, start_intersection: Intersection = None, end_intersection: Intersection = None,
+    def __init__(self, id: str, start_intersection: Intersection = None, end_intersection: Intersection = None,
                  lanes: List[Lane] = None, points: List[Point] = None):
-        self.id = id
-        self.start_intersection = start_intersection
-        self.end_intersection = end_intersection
-        self.lanes = lanes if lanes is not None else []
-        self.points = points if points is not None else []
+        self.id: str = id
+        self.start_intersection: Intersection = start_intersection
+        self.end_intersection: Intersection = end_intersection
+        self.lanes: List[Lane] = lanes if lanes is not None else []
+        self.points: List[Point] = points if points is not None else []
         self.lane_pointers = []
         self.plan_route_buffer = []
 
@@ -82,3 +82,49 @@ class Road:
 
     def clear_plan_route_buffer(self):
         self.plan_route_buffer.clear()
+
+    def init_lanes_points(self) -> None:
+        dsum = 0.0
+        roadPoints = self.points
+
+        assert(len(roadPoints) >= 2)
+
+        if self.start_intersection.is_virtual_intersection() is False:
+            width = self.start_intersection.width
+            p1 = roadPoints[0]
+            p2 = roadPoints[1]
+            roadPoints[0] = p1 + (p2 - p1).unit() * width
+
+        if self.end_intersection.is_virtual_intersection() is False:
+            width = self.end_intersection.width
+            p1 = roadPoints[len(roadPoints) - 2]
+            p2 = roadPoints[len(roadPoints) - 1]
+            roadPoints[len(roadPoints) - 1] = p2 - (p2 - p1).unit() * width
+
+        for lane in self.lanes:
+            dmin = dsum
+            dmax = dsum + lane.width
+            self.points.clear()
+
+            for j in range(len(roadPoints)):
+                lanePoints = lane.points
+                if j == 0:
+                    u = (roadPoints[1] - roadPoints[0]).unit()
+                    v = -u.normal()
+                    startPoint = roadPoints[j] + v * ((dmin + dmax) / 2.0)
+                    lanePoints.push_back(startPoint)
+                elif j + 1 == len(roadPoints):
+                    u = (roadPoints[j] - roadPoints[j - 1]).unit()
+                    v = -u.normal()
+                    endPoint = roadPoints[j] + v * ((dmin + dmax) / 2.0)
+                    lanePoints.push_back(endPoint)
+                else:
+                    u1 = (roadPoints[j + 1] - roadPoints[j]).unit()
+                    u2 = (roadPoints[j] - roadPoints[j - 1]).unit()
+                    u = (u1 + u2).unit()
+                    v = -u.normal()
+                    interPoint = roadPoints[j] + v * ((dmin + dmax) / 2.0)
+                    lanePoints.push_back(interPoint)
+            lane.length = Point.get_length_of_points(lane.points)
+            dsum += lane.width
+

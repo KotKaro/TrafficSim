@@ -5,10 +5,6 @@ import os
 from typing import List
 
 
-def get_length_of_points(points):
-    pass
-
-
 class Point:
     eps = 1e-8
 
