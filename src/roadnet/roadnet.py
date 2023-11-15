@@ -87,9 +87,9 @@ class RoadNet:
         for road in self._roads:
             road.init_lanes_points()
 
-        typeMap: Dict[str, RoadLinkType] = {{"turn_left", RoadLinkType.turn_left},
-                                            {"turn_right", RoadLinkType.turn_right},
-                                            {"go_straight", RoadLinkType.go_straight}}
+        typeMap: Dict[str, RoadLinkType] = {'turn_left': RoadLinkType.turn_left,
+                                            "turn_right": RoadLinkType.turn_right,
+                                            "go_straight": RoadLinkType.go_straight}
 
         for i in range(len(inter_values)):
             curInterValue = inter_values[i]
