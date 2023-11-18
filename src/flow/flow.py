@@ -31,7 +31,7 @@ class Flow:
 
         if self.current_time >= self.start_time:
             while self.now_time >= self.interval:
-                vehicle = Vehicle(self.vehicleInfo, id + "_" + self.cnt, self.engine, self);
+                vehicle = Vehicle(self.vehicleInfo, id + "_" + self.cnt, self.engine, self)
                 self.cnt += 1
                 priority = vehicle.get_priority()
 

@@ -91,7 +91,7 @@ class Lane(Drivable):
                 self.vehicles[iter_index].set_segment_index(seg.index)
                 iter_index += 1
 
-    def get_segment(self, index):
+    def get_segment(self, index) -> Segment:
         return self.segments[index]
 
     def get_segments(self):

@@ -32,7 +32,7 @@ class Segment:
     def remove_vehicle(self, vehicle):
         self.vehicles.remove(vehicle)
 
-    def insert_vehicle(self, vehicle):
+    def insert_vehicle(self, vehicle: List[Vehicle]):
         index = 0
         for v in self.vehicles:
             if v.get_distance() > vehicle.get_distance():

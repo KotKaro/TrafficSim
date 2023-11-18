@@ -38,7 +38,7 @@ class Drivable(ABC):
     def get_drivable_type(self):
         return self.drivable_type
 
-    def is_lane(self):
+    def is_lane(self) -> bool:
         return self.drivable_type == DrivableType.LANE
 
     def is_lane_link(self):

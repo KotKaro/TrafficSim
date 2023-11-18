@@ -10,3 +10,6 @@ class Engine:
 
     def pushVehicle(self, vehicle: Vehicle, pushToDrivable: bool):
         pass
+
+    def get_current_time(self) -> float:
+        pass
