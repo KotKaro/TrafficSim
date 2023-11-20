@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 from src.engine.engine import Engine
@@ -5,7 +6,10 @@ from src.flow.flow import Flow
 from src.roadnet.drivable import Drivable
 from src.roadnet.road import Road
 from src.roadnet.segment import Segment
+from src.utility.utility import min2double
 from src.vehicle.controller_info import ControllerInfo
+from src.vehicle.signal import Signal
+from src.vehicle.simple_lane_change import SimpleLaneChange
 from src.vehicle.vehicle_info import VehicleInfo
 
 
@@ -41,7 +45,7 @@ class Vehicle:
             self.controller_info: ControllerInfo = ControllerInfo(self, route=vehicle_info.route, rnd=engine.rnd)
             self.id = id
             self.engine: Engine = engine
-            self.lane_change = SimpleLaneChange(self)  # Assuming SimpleLaneChange class exists
+            self.lane_change: SimpleLaneChange = SimpleLaneChange(self)  # Assuming SimpleLaneChange class exists
             self.flow = flow
             self.controller_info.approaching_intersection_distance = \
                 vehicle_info.max_speed ** 2 / vehicle_info.usual_neg_acc / 2 + \
@@ -126,3 +130,33 @@ class Vehicle:
 
     def get_id(self):
         return self.id
+
+    def get_target_leader(self) -> 'Vehicle':
+        return self.lane_change.target_leader
+
+    def getNoCollisionSpeed(self, vL: float, dL: float, vF: float, dF: float, gap: float, interval: float,
+                            target_gap: float) -> float:
+        c: float = vF * interval / 2 + target_gap - 0.5 * vL * vL / dL - gap
+        a: float = 0.5 / dF
+        b: float = 0.5 * interval
+        if b * b < 4 * a * c:
+            return -100
+
+        v1: float = 0.5 / a * (math.sqrt(b * b - 4 * a * c) - b)
+        v2: float = 2 * vL - dL * interval + 2 * (gap - target_gap) / interval
+        return min2double(v1, v2)
+
+    def getMaxNegAcc(self):
+        return self.vehicle_info.max_neg_acc
+
+    def receiveSignal(self, sender: 'Vehicle') -> None:
+        if self.lane_change.changing:
+            return
+
+        signal_recv: Signal = self.lane_change.signal_recv
+        signal_send: Signal = self.lane_change.signal_send
+        curPriority: int = signal_recv.source.get_priority() if signal_recv else -1
+        newPriority: int = sender.get_priority()
+
+        if (signal_recv is None or curPriority < newPriority) and (signal_send is None or self.priority < newPriority):
+            self.lane_change.signal_recv = sender.lane_change.signal_send

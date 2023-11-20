@@ -48,3 +48,41 @@ class SimpleLaneChange(LaneChange):
             return lane.get_length() - self.vehicle.get_distance()
         else:
             return leader.get_distance() - self.vehicle.get_distance() - leader.get_len()
+
+    def yield_speed(self, interval: float) -> float:
+        if self.plan_change():
+            self.waiting_time += interval
+
+        if self.signal_recv:
+            if self.vehicle == self.signal_recv.source.get_target_leader():
+                return 100
+            else:
+                source: Vehicle = self.signal_recv.source
+                srcSpeed: float = source.get_speed()
+                gap: float = source.lane_change.gap_before() - source.lane_change.safe_gap_before()
+
+                v = self.vehicle.getNoCollisionSpeed(srcSpeed, source.getMaxNegAcc(),
+                                                     self.vehicle.get_speed(),
+                                                     self.vehicle.getMaxNegAcc(),
+                                                     gap, interval,
+                                                     0)
+
+                if v < 0:
+                    v = 100
+                # If the follower is too fast, let it go.
+
+                return v
+        return 100
+
+    def send_signal(self) -> None:
+        if (self.target_leader):
+            self.target_leader.receiveSignal(self.vehicle)
+
+        if self.target_follower:
+            self.target_follower.receiveSignal(self.vehicle)
+
+    def safe_gap_before(self) -> float:
+        return self.target_follower.getMinBrakeDistance() if self.target_follower is not None else 0
+
+    def safe_gap_after(self) -> float:
+        return self.vehicle.getMinBrakeDistance()

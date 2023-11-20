@@ -1,7 +1,6 @@
 import sys
 from copy import copy
 
-from src.vehicle.router import Router
 from src.vehicle.signal import Signal
 from src.vehicle.vehicle import Vehicle
 from src.roadnet.lane import Lane
