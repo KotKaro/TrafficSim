@@ -87,7 +87,6 @@ class LaneChange:
         segId: int = self.vehicle.get_segment_index()
         targetSeg = targetLane.get_segment(segId)
 
-        followerItr = self.vehicle.getListIterator()
         shadow.set_parent(self.vehicle)
         self.vehicle.set_shadow(shadow)
 
@@ -95,7 +94,7 @@ class LaneChange:
         shadow.controllerInfo.drivable = targetLane
         shadow.controllerInfo.router.update()
 
-        targetFollowerItr = self.target_follower.getListIterator() if self.target_follower else targetLane.get_vehicles()
+        targetFollowerItr = [vehicle for vehicle in (self.target_follower.getListIterator() if self.target_follower else targetLane.get_vehicles())]
         targetLane.get_vehicles().insert(targetFollowerItr, shadow)
         targetSeg.insert_vehicle(targetLane.get_vehicles())
 
@@ -103,10 +102,10 @@ class LaneChange:
         if self.target_follower:
             self.target_follower.update_leader_and_gap(shadow)
 
-    def safe_gap_before(self):
+    def safe_gap_before(self) -> float:
         raise NotImplementedError
 
-    def safe_gap_after(self):
+    def safe_gap_after(self) -> float:
         raise NotImplementedError
 
     def plan_change(self) -> bool:
@@ -115,19 +114,33 @@ class LaneChange:
                  and self.signal_send.target != self.vehicle.get_cur_drivable())
                 or self.changing)
 
-    def can_change(self):
+    def can_change(self) -> bool:
         return self.signal_send and not self.signal_recv
 
-    def is_gap_valid(self):
+    def is_gap_valid(self) -> bool:
         return self.gap_after() >= self.safe_gap_after() and self.gap_before() >= self.safe_gap_before()
 
-    def finish_changing(self):
-        # Method implementation
-        pass
+    def finish_changing(self) -> None:
+        self.changing = False
+        self.finished = True
+        self.last_change_time = self.vehicle.engine.get_current_time()
+        partner = self.vehicle.get_partner()
+        if partner.is_real():
+            partner.set_id(self.vehicle.get_id())
 
-    def abort_changing(self):
-        # Method implementation
-        pass
+        partner.lane_change_info.partnerType = 0
+        partner.lane_change_info.offset = 0
+        partner.lane_change_info.partner = None
+        self.vehicle.lane_change_info.partner = None
+        self.clear_signal()
+
+    def abort_changing(self) -> None:
+        partner = self.vehicle.get_partner()
+        partner.lane_change.changing = False
+        partner.lane_change.partnerType = 0
+        partner.lane_change.offset = 0
+        partner.lane_change.partner = None
+        self.clear_signal()
 
     def yield_speed(self, interval):
         raise NotImplementedError
@@ -135,13 +148,36 @@ class LaneChange:
     def send_signal(self):
         raise NotImplementedError
 
-    def get_direction(self):
-        # Method implementation
-        pass
+    def get_direction(self) -> int:
+        if self.vehicle.get_cur_drivable().is_lane():
+            return 0
+
+        curLane: Lane = self.vehicle.get_cur_drivable()
+        if self.signal_send is None:
+            return 0
+
+        if self.signal_send.target is None:
+            return 0
+
+        if self.signal_send.target == curLane.get_outer_lane():
+            return 1
+
+        if self.signal_send.target == curLane.get_inner_lane():
+            return -1
+
+        return 0
 
     def clear_signal(self):
-        # Method implementation
-        pass
+        self.target_leader = None
+        self.target_follower = None
+        if self.signal_send is not None:
+            self.last_dir = self.signal_send.direction
+        else:
+            self.last_dir = 0
+        if self.changing:
+            return
+        self.signal_send = None
+        self.signal_recv = None
 
     def has_finished(self):
         return self.finished

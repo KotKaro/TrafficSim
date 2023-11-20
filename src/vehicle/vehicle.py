@@ -114,3 +114,15 @@ class Vehicle:
 
     def get_max_speed(self) -> float:
         return self.vehicle_info.max_speed
+
+    def get_partner(self) -> 'Vehicle':
+        return self.lane_change_info.partner
+
+    def is_real(self):
+        return self.lane_change_info.partnerType != 2
+
+    def set_id(self, new_identifier: str):
+        self.id = new_identifier
+
+    def get_id(self):
+        return self.id
