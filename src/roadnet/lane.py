@@ -59,7 +59,7 @@ class Lane(Drivable):
     def get_end_intersection(self):
         return self.belong_road.end_intersection
 
-    def get_lane_links_to_road(self, road) -> List[LaneLink]:
+    def get_lane_links_to_road(self, road: Road) -> List[LaneLink]:
         return [lane_link for lane_link in self.lane_links if lane_link.get_end_lane() == road]
 
     def reset(self):
