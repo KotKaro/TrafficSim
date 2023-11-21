@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
+from src.roadnet.road import Road
 from src.utility.utility import Point
 from src.vehicle.vehicle import Vehicle
 
@@ -19,6 +20,7 @@ class Drivable(ABC):
         self.vehicles: List[Vehicle] = []
         self.points = []
         self.drivable_type = DrivableType(drivable_type)
+        self.belong_road: Road = None
 
     def get_vehicles(self):
         return self.vehicles

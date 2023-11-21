@@ -26,13 +26,13 @@ class SimpleLaneChange(LaneChange):
 
             router: Router = self.vehicle.controller_info.router
             if curLane.lane_index < len(curLane.belong_road.get_lanes()) - 1:
-                if router.on_last_road() or router.get_next_drivable(curLane.get_outer_lane()):
+                if router.on_last_road() or router.get_next_drivable(curr_drivable=curLane.get_outer_lane()):
                     outerEst = self.estimate_gap(curLane.get_outer_lane())
                     if outerEst > curEst + self.vehicle.get_len():
                         self.signal_send.target = curLane.get_outer_lane()
 
             if curLane.lane_index > 0:
-                if router.on_last_road() or router.get_next_drivable(curLane.get_inner_lane()):
+                if router.on_last_road() or router.get_next_drivable(curr_drivable=curLane.get_inner_lane()):
                     innerEst = self.estimate_gap(curLane.get_inner_lane())
                     if innerEst > curEst + self.vehicle.get_len() and innerEst > outerEst:
                         self.signal_send.target = curLane.get_inner_lane()

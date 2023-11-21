@@ -16,7 +16,7 @@ class Router:
     def __init__(self, other: 'Router' = None, vehicle: Vehicle = None, route: Route = None, rnd: Random = None):
         if other:
             self.vehicle: Vehicle = other.vehicle
-            self.route: Route = other.route
+            self.route: List[Road] = other.route
             self.anchor_points: List[Road] = self.anchor_points
             self.rnd: Random = other.rnd
         else:
@@ -40,7 +40,7 @@ class Router:
                     candidateLanes.append(lane)
 
         assert len(candidateLanes) > 0
-        return self.select_lane(None, candidateLanes)
+        return self.select_lane(lanes=candidateLanes)
 
     def get_next_drivable(self, i: int = None, curr_drivable: Drivable = None) -> Drivable:
         if i is not None:
@@ -70,32 +70,41 @@ class Router:
                     return None
                 elif tmpCurRoad == self.route[-3]:
                     lane_links = cur_lane.get_lane_links_to_road(self.route[self.route.index(self.i_cur_road) + 1])
-                    return self.selectLaneLink(cur_lane, lane_links)
+                    return self.select_lane_link(cur_lane, lane_links)
                 else:
                     lane_links = cur_lane.get_lane_links_to_road(self.route[self.route.index(self.i_cur_road) + 1])
                     candidateLaneLinks = [a for a in lane_links if len(a.get_end_lane().get_lane_links_to_road(
                         self.route[self.route.index(tmpCurRoad) + 2])) > 0]
-                    return self.selectLaneLink(cur_lane, candidateLaneLinks)
+                    return self.select_lane_link(cur_lane, candidateLaneLinks)
 
-    def selectLaneLink(self, cur_lane: Lane, lane_links: List[LaneLink]) -> LaneLink:
+    def select_lane_link(self, cur_lane: Lane, lane_links: List[LaneLink]) -> LaneLink | None:
         if len(lane_links) == 0:
             return None
 
-        return lane_links[self.selectLaneIndex(cur_lane, [x.get_end_lane() for x in lane_links])]
+        return lane_links[self.select_lane_index(cur_lane, [x.get_end_lane() for x in lane_links])]
 
-    def set_vehicle(self, vehicle):
-        pass
+    def set_vehicle(self, vehicle: Vehicle):
+        self.vehicle = vehicle
 
-    def update(self):
-        pass
+    def update(self) -> None:
+        cur_drivable = self.vehicle.get_cur_drivable()
+        if cur_drivable.is_lane():
+            while self.route.index(self.i_cur_road) < len(self.route) and cur_drivable.get_belong_road() != self.route[
+                self.route.index(self.i_cur_road)]:
+                self.i_cur_road = self.route[self.route.index(self.i_cur_road) + 1]
+            assert self.route.index(self.i_cur_road) < len(self.route)
+
+        self.planned = [drivable for drivable in self.planned if drivable == cur_drivable]
+
+    def is_last_road(self, drivable: Drivable) -> bool:
+        if drivable.is_lane_link():
+            return False
+        return drivable.belong_road == self.route[-1]
 
     def on_last_road(self) -> bool:
-        pass
+        return self.is_last_road(self.vehicle.get_cur_drivable())
 
-    def get_next_drivable(self, curLane: Drivable) -> Drivable:
-        pass
-
-    def selectLaneIndex(self, cur_lane: Lane, lanes: List[Lane]) -> int:
+    def select_lane_index(self, cur_lane: Lane, lanes: List[Lane]) -> int:
         assert len(lanes) > 0
         if cur_lane is None:
             return self.rnd.randint(0, len(lanes) - 1);
@@ -109,10 +118,10 @@ class Router:
                 lane_diff = abs(cur_lane_diff)
                 selected = i
 
-        return selected;
+        return selected
 
     def select_lane(self, cur_lane: Lane, lanes: List[Lane]):
         if len(lanes) == 0:
             return None
 
-        return lanes[self.selectLaneIndex(cur_lane, lanes)]
+        return lanes[self.select_lane_index(cur_lane, lanes)]
