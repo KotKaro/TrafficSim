@@ -61,11 +61,11 @@ class SimpleLaneChange(LaneChange):
                 srcSpeed: float = source.get_speed()
                 gap: float = source.lane_change.gap_before() - source.lane_change.safe_gap_before()
 
-                v = self.vehicle.getNoCollisionSpeed(srcSpeed, source.getMaxNegAcc(),
-                                                     self.vehicle.get_speed(),
-                                                     self.vehicle.getMaxNegAcc(),
-                                                     gap, interval,
-                                                     0)
+                v = self.vehicle.get_no_collision_speed(srcSpeed, source.getMaxNegAcc(),
+                                                        self.vehicle.get_speed(),
+                                                        self.vehicle.getMaxNegAcc(),
+                                                        gap, interval,
+                                                        0)
 
                 if v < 0:
                     v = 100

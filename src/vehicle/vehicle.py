@@ -4,6 +4,8 @@ from typing import List
 from src.engine.engine import Engine
 from src.flow.flow import Flow
 from src.roadnet.drivable import Drivable
+from src.roadnet.lane import Lane
+from src.roadnet.lane_link import LaneLink
 from src.roadnet.road import Road
 from src.roadnet.segment import Segment
 from src.utility.utility import min2double
@@ -93,7 +95,7 @@ class Vehicle:
     def get_segment_index(self) -> int:
         pass
 
-    def get_cur_drivable(self) -> Drivable:
+    def get_cur_drivable(self) -> LaneLink | Lane:
         pass
 
     def get_offset(self) -> float:
@@ -134,8 +136,8 @@ class Vehicle:
     def get_target_leader(self) -> 'Vehicle':
         return self.lane_change.target_leader
 
-    def getNoCollisionSpeed(self, vL: float, dL: float, vF: float, dF: float, gap: float, interval: float,
-                            target_gap: float) -> float:
+    def get_no_collision_speed(self, vL: float, dL: float, vF: float, dF: float, gap: float, interval: float,
+                               target_gap: float) -> float:
         c: float = vF * interval / 2 + target_gap - 0.5 * vL * vL / dL - gap
         a: float = 0.5 / dF
         b: float = 0.5 * interval
