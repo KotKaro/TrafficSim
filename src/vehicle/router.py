@@ -2,7 +2,7 @@ import heapq
 import sys
 from collections import deque
 from random import Random
-from typing import List, Deque, Dict, Set, Tuple
+from typing import List, Deque
 
 from src.flow.route import Route
 from src.roadnet.drivable import Drivable
