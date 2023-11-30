@@ -9,6 +9,7 @@ from src.roadnet.lane_link import LaneLink
 from src.roadnet.road import Road
 from src.roadnet.segment import Segment
 from src.utility.utility import min2double
+from src.vehicle.buffer import Buffer
 from src.vehicle.controller_info import ControllerInfo
 from src.vehicle.signal import Signal
 from src.vehicle.simple_lane_change import SimpleLaneChange
@@ -28,7 +29,7 @@ class Vehicle:
             self.vehicle_info = vehicle.vehicle_info
             self.controller_info = ControllerInfo(self, other=vehicle.controller_info)
             self.lane_change_info = vehicle.lane_change_info
-            self.buffer = vehicle.buffer
+            self.buffer: Buffer = vehicle.buffer
             self.priority = vehicle.priority
             self.id = vehicle.id if id is None else id
             self.engine: Engine = vehicle.engine if engine is None else engine
@@ -57,7 +58,26 @@ class Vehicle:
             self.enter_time = self.engine.get_current_time()
 
             # Default initialization for attributes not set in the constructors
-        self.lane_change_info = None  # Initi
+        self.lane_change_info = None  # Init
+
+    def setDeltaDistance(self, dis: float) -> None:
+        if self.buffer.isDisSet or dis < self.buffer.deltaDis:
+            self.unSetEnd()
+            self.unSetDrivable()
+            self.buffer.deltaDis = dis
+            dis = dis + self.controller_info.dis
+            drivable: Drivable = self.getCurDrivable()
+            for i in range(drivable.get_length()):
+                dis -= drivable.get_length()
+                nextDrivable = self.controller_info.router.get_next_drivable(i=i)
+                if nextDrivable is None:
+                    assert (self.controller_info.router.is_last_road(drivable))
+                    self.setEnd(True)
+
+                drivable = nextDrivable
+                self.setDrivable(drivable)
+
+            self.setDis(dis)
 
     def get_distance(self) -> float:
         pass
@@ -162,3 +182,24 @@ class Vehicle:
 
         if (signal_recv is None or curPriority < newPriority) and (signal_send is None or self.priority < newPriority):
             self.lane_change.signal_recv = sender.lane_change.signal_send
+
+    def unSetEnd(self):
+        self.buffer.isEndSet = False
+
+    def unSetDrivable(self):
+        self.buffer.isDrivableSet = False
+
+    def getCurDrivable(self) -> Drivable:
+        return self.controller_info.drivable
+
+    def setEnd(self, end: bool) -> None:
+        self.buffer.end = end
+        self.buffer.isEndSet = True
+
+    def setDrivable(self, drivable: Drivable) -> None:
+        self.buffer.drivable = drivable
+        self.buffer.isDrivableSet = True
+
+    def setDis(self, dis: float):
+        self.buffer.dis = dis
+        self.buffer.isDisSet = True
