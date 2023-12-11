@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
+from src.roadnet.lane import Lane
 from src.roadnet.road import Road
 from src.utility.utility import Point
 from src.vehicle.vehicle import Vehicle
@@ -74,3 +75,6 @@ class Drivable(ABC):
                 return (self.points[i + 1] - self.points[i]).unit()
             else:
                 remain -= double_len
+
+    def get_start_lane(self) -> Lane:
+        pass

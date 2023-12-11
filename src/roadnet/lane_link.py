@@ -26,7 +26,7 @@ class LaneLink(Drivable):
     def get_crosses(self):
         return self.crosses
 
-    def get_start_lane(self):
+    def get_start_lane(self) -> Lane:
         return self.startLane
 
     def get_end_lane(self):

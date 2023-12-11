@@ -13,3 +13,6 @@ class Engine:
 
     def get_current_time(self) -> float:
         pass
+
+    def get_interval(self) -> float:
+        pass

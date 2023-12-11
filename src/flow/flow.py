@@ -38,7 +38,7 @@ class Flow:
                 while self.engine.checkPriority(priority):
                     priority = self.engine.rnd()
 
-                vehicle.setPriority(priority)
+                vehicle.set_priority(priority)
                 self.engine.pushVehicle(vehicle, False)
                 vehicle.get_first_road().add_plan_route_vehicle(vehicle)
                 self.now_time -= self.interval

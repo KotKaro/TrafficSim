@@ -61,9 +61,9 @@ class SimpleLaneChange(LaneChange):
                 srcSpeed: float = source.get_speed()
                 gap: float = source.lane_change.gap_before() - source.lane_change.safe_gap_before()
 
-                v = self.vehicle.get_no_collision_speed(srcSpeed, source.getMaxNegAcc(),
+                v = self.vehicle.get_no_collision_speed(srcSpeed, source.get_max_neg_acc(),
                                                         self.vehicle.get_speed(),
-                                                        self.vehicle.getMaxNegAcc(),
+                                                        self.vehicle.get_max_neg_acc(),
                                                         gap, interval,
                                                         0)
 
@@ -76,10 +76,10 @@ class SimpleLaneChange(LaneChange):
 
     def send_signal(self) -> None:
         if (self.target_leader):
-            self.target_leader.receiveSignal(self.vehicle)
+            self.target_leader.receive_signal(self.vehicle)
 
         if self.target_follower:
-            self.target_follower.receiveSignal(self.vehicle)
+            self.target_follower.receive_signal(self.vehicle)
 
     def safe_gap_before(self) -> float:
         return self.target_follower.getMinBrakeDistance() if self.target_follower is not None else 0

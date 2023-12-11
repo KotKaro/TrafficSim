@@ -23,7 +23,7 @@ class Intersection:
         self.crosses: List[Cross] = crosses
         self.lane_links: List[LaneLink] = lane_links
 
-    def get_id(self):
+    def get_id(self) -> str:
         return self.id
 
     def get_traffic_light(self):

@@ -93,7 +93,7 @@ class LaneChange:
         shadow.controllerInfo.drivable = targetLane
         shadow.controllerInfo.router.update()
 
-        targetFollowerItr = [vehicle for vehicle in (self.target_follower.getListIterator() if self.target_follower else targetLane.get_vehicles())]
+        targetFollowerItr = [vehicle for vehicle in (self.target_follower.get_list_iterator() if self.target_follower else targetLane.get_vehicles())]
         targetLane.get_vehicles().insert(targetFollowerItr, shadow)
         targetSeg.insert_vehicle(targetLane.get_vehicles())
 

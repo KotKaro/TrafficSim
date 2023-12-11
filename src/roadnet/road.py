@@ -17,7 +17,7 @@ class Road:
         self.lane_pointers = []
         self.plan_route_buffer = []
 
-    def get_id(self):
+    def get_id(self) -> str:
         return self.id
 
     def get_start_intersection(self) -> Intersection:
