@@ -27,7 +27,7 @@ class RoadNet:
     def get_point(self, p1: Point, p2: Point, a: float):
         return Point((p2.x - p1.x) * a + p1.x, (p2.y - p1.y) * a + p1.y)
 
-    def load_from_json(self, json_file_name):
+    def load_from_json(self, json_file_name) -> bool:
         with open(json_file_name, 'r') as file:
             document = json.load(file)
 

@@ -368,10 +368,10 @@ class Vehicle:
 
     def get_intersection_related_speed(self, interval: float) -> float:
         v = self.vehicle_info.max_speed
-        nextDrivable = self.get_next_drivable()
+        next_drivable = self.get_next_drivable()
         # const LaneLink *laneLink = nullptr;
-        if nextDrivable and nextDrivable.is_lane_link():
-            laneLink: LaneLink = nextDrivable;
+        if next_drivable and next_drivable.is_lane_link():
+            laneLink: LaneLink = next_drivable
             if laneLink.is_available() is False or laneLink.get_end_lane().can_enter(self) is False:
                 if self.get_min_brake_distance() > self.controller_info.drivable.get_length() - self.controller_info.dis:
                     # TODO: what if it cannot brake before red light?

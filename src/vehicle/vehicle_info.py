@@ -1,3 +1,6 @@
+from src.flow.route import Route
+
+
 class VehicleInfo:
     def __init__(self, route=None):
         self.speed = 0
@@ -12,4 +15,4 @@ class VehicleInfo:
         self.headway_time = 1
         self.yield_distance = 5
         self.turn_speed = 8.3333
-        self.route = route
+        self.route: Route = route
