@@ -81,3 +81,6 @@ class Drivable(ABC):
 
     def update_history(self):
         pass
+
+    def push_waiting_vehicle(self, vehicle: Vehicle) -> None:
+        pass

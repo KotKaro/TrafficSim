@@ -11,6 +11,7 @@ from src.utility.control_info import ControlInfo
 from src.utility.utility import min2double, Point, max2double
 from src.vehicle.buffer import Buffer
 from src.vehicle.controller_info import ControllerInfo
+from src.vehicle.lane_change import LaneChange
 from src.vehicle.lane_change_info import LaneChangeInfo
 from src.vehicle.signal import Signal
 from src.vehicle.simple_lane_change import SimpleLaneChange
@@ -576,3 +577,26 @@ class Vehicle:
     def set_enter_lane_link_time(self, enter_lane_link_time: int) -> None:
         self.buffer.enterLaneLinkTime = enter_lane_link_time
         self.buffer.isEnterLaneLinkTimeSet = True
+
+    def lane_change_urgency(self) -> int:
+        return self.lane_change.signal_send.urgency
+
+    def update_lane_change_neighbor(self) -> None:
+        return self.lane_change.update_leader_and_follower()
+
+    def send_signal(self) -> None:
+        return self.lane_change.send_signal()
+
+    def can_change(self) -> bool:
+        return self.lane_change.can_change()
+
+    def get_lane_change(self) -> LaneChange:
+        return self.lane_change
+
+    def insert_shadow(self, vehicle: 'Vehicle') -> None:
+        self.lane_change.insert_shadow(shadow=vehicle)
+
+    def set_custom_speed(self, speed: float) -> None:
+        self.buffer.customSpeed = speed
+        self.buffer.isCustomSpeedSet = True
+

@@ -22,6 +22,7 @@ from src.vehicle.vehicle_info import VehicleInfo
 
 class Engine:
     def __init__(self, config_file: str, thread_num: int):
+        self.log_out = None
         self.step: int = 0
         self.activeVehicleCount: int = 0
         self.finished = False
@@ -34,7 +35,7 @@ class Engine:
         self.dir: str
         self.road_net: RoadNet
         self.saveReplayInConfig: bool
-        self.saveReplay: bool
+        self.saveReplay: bool = False
         self.finished_vehicle_cnt: int = 0
         self.active_vehicle_count: int = 0
         self.cumulative_travel_time: float = 0.0
@@ -43,7 +44,7 @@ class Engine:
         self.push_buffer: List[Tuple[Vehicle, float]] = []
 
         self.thread_num = thread_num
-        self.vehicle_map = Dict[str, Vehicle] = {}
+        self.vehicle_map: Dict[str, Vehicle] = {}
         self.thread_vehicle_pool: List[List[Vehicle]] = [[] for _ in range(thread_num)]
         self.thread_road_pool: List[List[Road]] = [[] for _ in range(thread_num)]
         self.thread_intersection_pool: List[List[Intersection]] = [[] for _ in range(thread_num)]
@@ -67,6 +68,20 @@ class Engine:
                 self.thread_drivable_pool[i]))
             self.threads.append(t)
             t.start()
+
+    def __del__(self):
+        self.log_out.close()
+        self.finished = True
+
+        for i in range((9 if self.laneChange else 6)):
+            self.start_barrier.wait()
+            self.end_barrier.wait()
+
+        for thread in self.thread_pool:
+            thread.join()
+
+        for vehicle_pair in self.vehicle_pool.values():
+            del vehicle_pair[0]
 
     def thread_controller(self, vehicle_pool, road_pool, intersection_pool, drivable_pool):
         # Thread specific processing logic
@@ -461,7 +476,6 @@ class Engine:
         self.end_barrier.wait()
         self.vehicle_remove_buffer.clear()
 
-
     def handle_waiting(self) -> None:
         for lane in self.road_net.get_lanes():
             buffer = lane.get_waiting_buffer()
@@ -477,22 +491,287 @@ class Engine:
                 vehicle.update_leader_and_gap(tail)
                 buffer.popleft()
 
-    def rnd(self):
-        pass
+    def update_log(self):
+        result = ""
+        for vehicle in self.get_running_vehicles():
+            pos = vehicle.get_point()
+            dir = vehicle.get_cur_drivable().get_direction_by_distance(vehicle.get_distance())
 
-    def check_priority(self, priority: int):
-        self.thread_vehicle_pool[priority] is not self.thread_vehicle_pool[-1]
+            lc = vehicle.last_lane_change_direction()
+            result += (
+                f"{pos.x} {pos.y} {math.atan2(dir.y, dir.x)} "
+                f"{vehicle.get_id()} {lc} {vehicle.get_len()} "
+                f"{vehicle.get_width()},"
+            )
+        result += ";"
 
-    def pushVehicle(self, vehicle: Vehicle, pushToDrivable: bool):
+        for road in self.roadnet.get_roads():
+            if road.get_end_intersection().is_virtual_intersection():
+                continue
+            result += road.get_id()
+            for lane in road.get_lanes():
+                if lane.get_end_intersection().is_implicit_intersection():
+                    result += " i"
+                    continue
+
+                can_go = all(lane_link.is_available() for lane_link in lane.get_lane_links())
+                result += " g" if can_go else " r"
+            result += ","
+
+        with open('logfile.txt', 'w') as log_out:  # Replace 'logfile.txt' with actual log file's path
+            log_out.write(f"{result}\n")
+
+    def update_leader_and_gap(self) -> None:
+        self.start_barrier.wait()
+        self.end_barrier.wait()
+
+    def notify_cross(self) -> None:
+        self.start_barrier.wait()
+        self.end_barrier.wait()
+
+    def nextStep(self) -> None:
+        for flow in self.flows:
+            flow.nextStep(self.interval)
+
+        self.plan_route()
+        self.handle_waiting()
+
+        if (self.laneChange):
+            self.init_segments()
+            self.plan_lane_change()
+            self.update_leader_and_gap()
+
+        self.notify_cross()
+
+        self.get_action()
+        self.update_location()
+        self.update_action()
+        self.update_leader_and_gap()
+
+        if self.rlTrafficLight is None:
+            intersections = self.road_net.get_intersections()
+            for intersection in intersections:
+                intersection.get_traffic_light().pass_time(self.interval)
+
+        if self.saveReplay:
+            self.update_log()
+
+        self.step += 1
+
+    def init_segments(self) -> None:
+        self.start_barrier.wait()
+        self.end_barrier.wait()
+
+    def check_priority(self, priority: int) -> bool:
+        return self.vehicle_pool[priority] != self.vehicle_pool[-1]
+
+    def push_vehicle(self, vehicle: Vehicle, push_to_drivable: bool) -> None:
+        threadIndex = np.random.randint(1, self.thread_num)
+        self.vehicle_pool[vehicle.get_priority()] = (vehicle, threadIndex)
+        self.vehicle_map[vehicle.get_id()] = vehicle
+        self.thread_vehicle_pool[threadIndex].append(vehicle)
+
+        if push_to_drivable:
+            vehicle.get_cur_drivable().push_waiting_vehicle(vehicle)
+
+    def get_vehicle_count(self) -> int:
+        return self.activeVehicleCount
+
+    def get_vehicles(self, include_waiting) -> List[str]:
+        ret = []
+        for vehicle in self.get_running_vehicles(include_waiting):  # Replace with your function call or attribute
+            ret.append(vehicle.get_id())
+        return ret
+
+    def get_lane_vehicle_count(self) -> Dict[str, int]:
+        ret: Dict[str, int] = {}
+        for lane in self.road_net.get_lanes():
+            ret[lane.get_id()] = lane.get_vehicle_count()
+        return ret
+
+    def get_lane_waiting_vehicle_count(self) -> Dict[str, int]:
+        ret: Dict[str, int] = {}
+
+        for lane in self.road_net.get_lanes():
+            cnt = 0;
+            for vehicle in lane.get_vehicles():
+                if vehicle.get_speed() < 0.1:
+                    cnt += 1;
+
+            ret[lane.get_id()] = cnt
+        return ret
+
+    def get_lane_vehicles(self) -> Dict[str, List[str]]:
+        ret: Dict[str, List[str]] = {}
+
+        for lane in self.road_net.get_lanes():
+            ret[lane.get_id()] = [vehicle.get_id() for vehicle in lane.get_vehicles()]
+
+        return ret
+
+    def get_vehicle_speed(self) -> Dict[str, float]:
+        ret: Dict[str, float] = {}
+        for vehicle in self.get_running_vehicles():
+            ret[vehicle.get_id()] = vehicle.get_speed()
+
+        return ret
+
+    def get_average_travel_time(self) -> float:
+        tt = self.cumulative_travel_time
+        n = self.finished_vehicle_cnt
+        for key in self.vehicle_pool:
+            tt += self.get_current_time() - self.vehicle_pool[key][0].enter_time
+            n += 1
+
+        return 0 if n == 0 else tt / n
+
+    def get_vehicle_distance(self) -> Dict[str, float]:
+        ret: Dict[str, float] = {}
+        for vehicle in self.get_running_vehicles():
+            ret[vehicle.get_id()] = vehicle.get_distance()
+
+        return ret
+
+    def set_traffic_light_phase(self, id: str, phaseIndex: int) -> None:
+        if self.rlTrafficLight is False:
+            print("please set rlTrafficLight to true to enable traffic light control")
+            return
+        self.road_net.get_intersection_by_id(id).get_traffic_light().set_phase(phaseIndex)
+
+    def set_replay_log_file(self, log_file: str) -> None:
+        if not self.saveReplayInConfig:
+            print("saveReplay is not set to true in config file!", file=sys.stderr)
+            return
+
+        if self.log_out is not None:
+            self.log_out.close()
+
+        try:
+            self.log_out = open(self.dir + "/" + log_file, 'w')
+        except IOError as e:
+            print("Failed to open file: ", e, file=sys.stderr)
+
+    def set_save_replay(self, open: bool) -> None:
+        if self.saveReplayInConfig is False:
+            print("saveReplay is not set to true in config file!", file=sys.stderr)
+            return
+
+        self.saveReplay = open
+
+    def reset(self, reset_rnd: bool) -> None:
+        for vehicle_pair in self.vehicle_pool.values():
+            del vehicle_pair[0]
+
+        for pool in self.thread_vehicle_pool:
+            pool.clear()
+
+        self.vehicle_pool.clear()
+        self.vehicle_map.clear()
+        self.road_net.reset()
+
+        self.finished_vehicle_cnt = 0
+        self.cumulative_travel_time = 0
+
+        for flow in self.flows:
+            flow.reset()
+
+        self.step = 0
+        self.active_vehicle_count = 0
+        if reset_rnd:
+            np.random.seed(self.seed)
+
+    def set_log_file(self, json_file, log_file):
+        try:
+            with open(json_file, 'w') as file:
+                json.dump(self.json_root, file)
+        except IOError:
+            print("write roadnet log file error", file=sys.stderr)
+
+        try:
+            self.log_out = open(log_file, 'w')
+        except IOError as e:
+            print("Failed to open log file: ", e, file=sys.stderr)
+
+    def get_running_vehicles(self, include_waiting):
+        ret = []
+        for vehicle_pair in self.vehicle_pool.values():
+            vehicle = vehicle_pair[0]  # Assuming that vehicle object is the first element of vehiclePair object
+            if vehicle.is_real() and (include_waiting or vehicle.is_running()):
+                ret.append(vehicle)
+        return ret
+
+    def schedule_lane_change(self):
+        self.lane_change_notify_buffer.sort(key=lambda vehicle: vehicle.lane_change_urgency(), reverse=True)
+        for v in self.lane_change_notify_buffer:
+            v.update_lane_change_neighbor()
+            v.send_signal()
+            if v.plan_lane_change() and v.can_change() and not v.is_changing():
+                lc = v.get_lane_change()
+                if lc.is_gap_valid() and v.get_cur_drivable().is_lane():
+                    self.insert_shadow(v)
+
+        self.lane_change_notify_buffer.clear()
+
+    def insert_shadow(self, vehicle):
+        thread_index = self.vehicle_pool[vehicle.get_priority()][1]
+        shadow: Vehicle = Vehicle(vehicle=vehicle, id=vehicle.get_id() + "_shadow", engine=self)
+        self.vehicle_map[shadow.get_id()] = shadow
+        self.vehicle_pool[shadow.get_priority()] = (shadow, thread_index)
+        self.thread_vehicle_pool[thread_index].append(shadow)
+        vehicle.insert_shadow(shadow)
+        self.active_vehicle_count += 1
+
+    def loadFromFile(self, file_name: str) -> None:
         pass
+        # Archive archive(*this, fileName);
+        # archive.resume(*this);
+
+    def set_vehicle_speed(self, vehicle_id: str, speed: float) -> None:
+        if vehicle_id not in self.vehicle_map:
+            raise Exception("Vehicle '" + vehicle_id + "' not found")
+        else:
+            self.vehicle_map[vehicle_id].set_custom_speed(speed)
+
+    def get_leader(self, vehicle_id: str) -> str:
+        if vehicle_id not in self.vehicle_map:
+            raise Exception("Vehicle '" + vehicle_id + "' not found")
+
+        vehicle = self.vehicle_map[vehicle_id]
+        if self.laneChange is not None:
+            if vehicle.is_real() is False:
+                vehicle = vehicle.get_partner()
+
+        leader = vehicle.get_leader()
+        if leader is not None:
+            return leader.get_id()
+        return ""
+
+    def set_route(self, vehicle_id: str, anchor_id: List[str]) -> bool:
+        if vehicle_id not in self.vehicle_map:
+            return False
+
+        vehicle = self.vehicle_map[vehicle_id]
+        anchors: List[Road] = [];
+
+        for road_id in anchor_id:
+            anchor = self.road_net.get_road_by_id(road_id)
+            if anchor is None:
+                return False;
+            anchors.append(anchor);
+
+        return vehicle.set_route(anchors)
+
+    def get_vehicle_info(self, vehicle_id: str) -> Dict[str, str]:
+        if vehicle_id not in self.vehicle_map:
+            raise Exception("Vehicle '" + vehicle_id + "' not found")
+
+        return self.vehicle_map[vehicle_id].get_info()
 
     def get_current_time(self) -> float:
-        pass
+        return self.step * self.interval
+
+    def rnd(self) -> int:
+        return np.random.randint(0, sys.maxsize)
 
     def get_interval(self) -> float:
-        pass
-
-    def setLogFile(self, json_file: str, log_file: str):
-        if write_json_to_file(json_file, self.json_root) is False:
-            print("write roadnet log file error")
-        open(log_file, 'w')
+        return self.interval

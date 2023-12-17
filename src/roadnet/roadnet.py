@@ -259,8 +259,10 @@ class RoadNet:
     def get_intersections(self):
         return self._intersections
 
-    def get_road_by_id(self, id):
-        return self._road_map.get(id)
+    def get_road_by_id(self, road_id: str) -> Road | None:
+        if road_id not in self._road_map:
+            return None
+        return self._road_map.get(road_id)
 
     def get_intersection_by_id(self, id):
         return self._inter_map.get(id)
