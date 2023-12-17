@@ -469,7 +469,7 @@ class Vehicle:
     def get_min_brake_distance(self) -> float:
         return 0.5 * self.vehicle_info.speed * self.vehicle_info.speed / self.vehicle_info.max_neg_acc
 
-    def set_blocker(self, blocker: 'Vehicle') -> None:
+    def set_blocker(self, blocker: 'Vehicle' | None) -> None:
         self.buffer.blocker = blocker
         self.buffer.isBlockerSet = True
 
@@ -521,3 +521,58 @@ class Vehicle:
 
     def is_running(self) -> bool:
         return self.controller_info.running
+
+    def get_buffer_speed(self) -> float:
+        return self.buffer.speed
+
+    def has_set_speed(self) -> bool:
+        return self.buffer.isSpeedSet
+
+    def has_set_end(self) -> bool:
+        return self.buffer.isEndSet
+
+    def is_changing(self) -> bool:
+        return self.lane_change.changing
+
+    def get_lane_change_direction(self) -> int:
+        return self.lane_change.signal_send.direction if self.lane_change.signal_recv is not None else 0
+
+    def get_max_offset(self) -> float:
+        target = self.lane_change.signal_send.target
+        return target.get_width() + self.get_cur_lane().get_width() / 2
+
+    def get_cur_lane(self) -> Lane | None:
+        if self.get_cur_drivable().is_lane():
+            return self.get_cur_drivable()
+        return None
+
+    def set_offset(self, offset: float) -> None:
+        self.lane_change_info.offset = offset
+
+    def has_set_drivable(self) -> bool:
+        return self.buffer.isDrivableSet
+
+    def get_buffer_dis(self) -> float:
+        return self.buffer.dis
+
+    def get_prev_drivable(self) -> Drivable:
+        return self.controller_info.prevDrivable
+
+    def make_lane_change_signal(self, interval) -> None:
+        self.lane_change.make_signal(interval)
+
+    def plan_lane_change(self) -> bool:
+        return self.lane_change.plan_change()
+
+    def get_buffer_blocker(self) -> 'Vehicle':
+        return self.buffer.blocker
+
+    def clear_signal(self) -> None:
+        self.lane_change.clear_signal()
+
+    def is_route_valid(self) -> bool:
+        return self.route_valid
+
+    def set_enter_lane_link_time(self, enter_lane_link_time: int) -> None:
+        self.buffer.enterLaneLinkTime = enter_lane_link_time
+        self.buffer.isEnterLaneLinkTimeSet = True

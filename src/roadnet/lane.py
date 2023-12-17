@@ -1,5 +1,5 @@
 from collections import deque
-from typing import List
+from typing import List, Deque
 
 from src.roadnet.drivable import Drivable, DrivableType
 from src.roadnet.history_record import HistoryRecord
@@ -66,7 +66,7 @@ class Lane(Drivable):
         self.waiting_buffer.clear()
         self.vehicles.clear()
 
-    def get_waiting_buffer(self):
+    def get_waiting_buffer(self) -> Deque[Vehicle]:
         return self.waiting_buffer
 
     def push_waiting_vehicle(self, vehicle):

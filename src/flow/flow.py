@@ -35,7 +35,7 @@ class Flow:
                 self.cnt += 1
                 priority = vehicle.get_priority()
 
-                while self.engine.checkPriority(priority):
+                while self.engine.check_priority(priority):
                     priority = self.engine.rnd()
 
                 vehicle.set_priority(priority)

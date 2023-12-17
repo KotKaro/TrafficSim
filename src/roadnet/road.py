@@ -4,6 +4,7 @@ from typing import List
 from src.roadnet.lane import Lane
 from src.roadnet.traffic_light import Intersection
 from src.utility.utility import Point
+from src.vehicle.vehicle import Vehicle
 
 
 class Road:
@@ -15,7 +16,7 @@ class Road:
         self.lanes: List[Lane] = lanes if lanes is not None else []
         self.points: List[Point] = points if points is not None else []
         self.lane_pointers = []
-        self.plan_route_buffer = []
+        self.plan_route_buffer: List[Vehicle] = []
 
     def get_id(self) -> str:
         return self.id
@@ -74,7 +75,7 @@ class Road:
             return -1
         return self.average_length() / averageSpeed
 
-    def get_plan_route_buffer(self):
+    def get_plan_route_buffer(self) -> List[Vehicle]:
         return self.plan_route_buffer
 
     def add_plan_route_vehicle(self, vehicle):

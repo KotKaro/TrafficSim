@@ -78,3 +78,6 @@ class Drivable(ABC):
 
     def get_start_lane(self) -> Lane:
         pass
+
+    def update_history(self):
+        pass
