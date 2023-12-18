@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from collections import deque
 from enum import Enum
-from typing import List
+from typing import List, Deque
 
+from src.roadnet.history_record import HistoryRecord
 from src.roadnet.lane import Lane
 from src.roadnet.road import Road
 from src.utility.utility import Point
@@ -22,6 +24,11 @@ class Drivable(ABC):
         self.points = []
         self.drivable_type = DrivableType(drivable_type)
         self.belong_road: Road = None
+
+        self.waiting_buffer: Deque[Vehicle] = deque()
+        self.history: List[HistoryRecord] = []
+        self.historyVehicleNum = 0
+        self.historyAverageSpeed = 0
 
     def get_vehicles(self):
         return self.vehicles
@@ -83,4 +90,7 @@ class Drivable(ABC):
         pass
 
     def push_waiting_vehicle(self, vehicle: Vehicle) -> None:
+        pass
+
+    def get_waiting_buffer(self) -> Deque[Vehicle]:
         pass

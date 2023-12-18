@@ -24,7 +24,6 @@ class Engine:
     def __init__(self, config_file: str, thread_num: int):
         self.log_out = None
         self.step: int = 0
-        self.activeVehicleCount: int = 0
         self.finished = False
         self.lock = threading.Lock()
         self.interval: float
@@ -485,7 +484,7 @@ class Engine:
             vehicle = buffer[0]
             if lane.available(vehicle):
                 vehicle.controller_info.running = True
-                self.activeVehicleCount += 1
+                self.active_vehicle_count += 1
                 tail = lane.get_last_vehicle()
                 lane.push_vehicle(vehicle)
                 vehicle.update_leader_and_gap(tail)
@@ -575,7 +574,7 @@ class Engine:
             vehicle.get_cur_drivable().push_waiting_vehicle(vehicle)
 
     def get_vehicle_count(self) -> int:
-        return self.activeVehicleCount
+        return self.active_vehicle_count
 
     def get_vehicles(self, include_waiting) -> List[str]:
         ret = []

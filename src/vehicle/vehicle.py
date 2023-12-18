@@ -27,6 +27,7 @@ class Vehicle:
                  engine: Engine = None,
                  flow: Flow = None):
         self.controllerInfo: ControllerInfo = None
+        self.lane_change: SimpleLaneChange | None = None
         if vehicle is not None and vehicle_info is None:
             # Acting as the copy constructor
             self.vehicle_info = vehicle.vehicle_info

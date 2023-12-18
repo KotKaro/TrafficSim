@@ -7,9 +7,12 @@ from src.vehicle.vehicle import Vehicle
 
 class SimpleLaneChange(LaneChange):
     def make_signal(self, interval):
-        if self.changing: return;
+        if self.changing:
+            return
+
         if self.vehicle.engine.get_current_time() - self.last_change_time < self.cooling_time:
             return
+
         self.signal_send = Signal()
         self.signal_send.source = self.vehicle
 

@@ -19,7 +19,7 @@ class Lane(Drivable):
         self.segments: List[Segment] = []
         self.lane_links: List[LaneLink] = []
         self.belong_road: Road = belong_road
-        self.waiting_buffer = deque()
+        self.waiting_buffer: Deque[Vehicle] = deque()
         self.history: List[HistoryRecord] = []
         self.drivable_type = DrivableType.LANE
 
